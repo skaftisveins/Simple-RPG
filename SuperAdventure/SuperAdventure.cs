@@ -1,12 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data;
-using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 using Engine;
@@ -18,19 +13,23 @@ namespace SuperAdventure
         private const string PLAYER_DATA_FILE_NAME = "PlayerData.xml";
 
         private Player _player; 
-        
 
         public SuperAdventure()
         {
             InitializeComponent();
 
-            if(File.Exists(PLAYER_DATA_FILE_NAME))
-            {
-                _player = Player.CreatePlayerFromXmlString(File.ReadAllText(PLAYER_DATA_FILE_NAME));
-            }
-            else
-            {
-                _player = Player.CreateDefaultPlayer();
+            _player = PlayerDataMapper.CreateFromDatabase();
+
+            if(_player == null)
+            { 
+                if(File.Exists(PLAYER_DATA_FILE_NAME))
+                {
+                    _player = Player.CreatePlayerFromXmlString(File.ReadAllText(PLAYER_DATA_FILE_NAME));
+                }
+                else
+                {
+                    _player = Player.CreateDefaultPlayer();
+                }
             }
             lblHitPoints.DataBindings.Add("Text", _player, "CurrentHitPoints");
             lblGold.DataBindings.Add("Text", _player, "Gold");
@@ -131,6 +130,7 @@ namespace SuperAdventure
                 btnEast.Visible = ( _player.CurrentLocation.LocationToEast != null);
                 btnSouth.Visible = (_player.CurrentLocation.LocationToSouth != null);
                 btnWest.Visible = ( _player.CurrentLocation.LocationToWest != null);
+                btnTrade.Visible = (_player.CurrentLocation.VendorWorkingHere != null);
                 // Display current location name and description
                 rtbLocation.Text = _player.CurrentLocation.Name +  Environment.NewLine;
                 rtbLocation.Text += _player.CurrentLocation.Description + Environment.NewLine;
@@ -187,20 +187,29 @@ namespace SuperAdventure
             _player.UsePotion(potion);
         }
 
+        private void btnTrade_Click(object sender, EventArgs e)
+        {
+            TradingScreen tradingScreen = new TradingScreen(_player);
+            tradingScreen.StartPosition = FormStartPosition.CenterParent;
+            tradingScreen.ShowDialog(this);
+        }
+
         private void ScrollToBottomOfMessages()
         {
             rtbMessages.SelectionStart = rtbMessages.Text.Length;
             rtbMessages.ScrollToCaret();
         }
 
-        private void SuperAdventure_FormClosing(object sender, FormClosingEventArgs e)
-        {
-            File.WriteAllText(PLAYER_DATA_FILE_NAME, _player.ToXmlString());
-        }
-
         private void cboWeapon_SelectedIndexChanged(object sender, EventArgs e)
         {
             _player.CurrentWeapon = (Weapon)cboWeapons.SelectedItem; // Add Weapon in front to cast it to the Weapon datatype
+        }
+
+        private void SuperAdventure_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            File.WriteAllText(PLAYER_DATA_FILE_NAME, _player.ToXmlString());
+
+            PlayerDataMapper.SaveToDatabase(_player);
         }
     }
 }

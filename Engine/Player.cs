@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Xml;
 
 namespace Engine
@@ -17,8 +15,6 @@ namespace Engine
         private Monster _currentMonster;
 
         public event EventHandler<MessageEventArgs> OnMessage;
-
-
 
         public int Gold
         {
@@ -55,7 +51,6 @@ namespace Engine
                 OnPropertyChanged("CurrentLocation");
             }
         }
-
 
         public BindingList<InventoryItem> Inventory { get; set; }
 
@@ -95,6 +90,15 @@ namespace Engine
         {
             ExperiencePoints += experiencePointsToAdd;
             MaximumHitPoints = (Level * 10);
+        }
+
+        public static Player CreatePlayerFromDatabase(int currentHitPoints, int maximumHitPoints, int gold,
+            int experiencePoints, int currentLocationID)
+        {
+            Player player = new Player(currentHitPoints, maximumHitPoints, gold, experiencePoints);
+            player.MoveTo(World.LocationByID(currentLocationID));
+
+            return player;
         }
 
         public static Player CreatePlayerFromXmlString(string xmlPlayerData)

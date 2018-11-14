@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
+﻿
 namespace Engine
 {
     public class HealingPotion : Item // Inheritance, child class or derived class from Item class
@@ -11,7 +6,7 @@ namespace Engine
         public int AmountToHeal { get; set; }
 
         public HealingPotion(int id, string name, string namePlural,
-            int amountToHeal) : base(id, name, namePlural) // take values from the parameters in the class
+            int amountToHeal, int price) : base(id, name, namePlural, price) // take values from the parameters in the class
         {
             AmountToHeal = amountToHeal;
         }

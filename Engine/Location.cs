@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
+﻿
 namespace Engine
 {
     public class Location
@@ -20,6 +15,7 @@ namespace Engine
         public Location LocationToEast { get; set; }
         public Location LocationToSouth { get; set; }
         public Location LocationToWest { get; set; }
+        public Vendor VendorWorkingHere { get; set; }
 
         // Class constructor we can call without passing the three values (item,quest,monster)
         public Location(int id, string name, string description, 
