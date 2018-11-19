@@ -101,7 +101,7 @@ namespace SuperAdventure
             });
 
             // Bind the vendor's inventory to the datagridview 
-            dgvVendorItems.DataSource = _currentPlayer.CurrentLocation.VendorWorkingHere.Inventory;
+            dgvVendorItems.DataSource = _currentPlayer.CurrentLocation.VendorWorkingHere.Inventory; // TODO
 
             // When the user clicks on a row, call this function
             dgvVendorItems.CellClick += dgvVendorItems_CellClick;

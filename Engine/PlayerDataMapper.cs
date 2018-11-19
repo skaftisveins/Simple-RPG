@@ -19,6 +19,7 @@ namespace Engine
                     connection.Open();
 
                     Player player;
+                    // int currentlocationID;
 
                     // Create a SQL command object, that uses the connection to our database
                     // The SqlCommand object is where we create our SQL statement
@@ -54,6 +55,8 @@ namespace Engine
                         // Create the Player object, with the saved game values
                         player = Player.CreatePlayerFromDatabase(currentHitPoints, maximumHitPoints, gold,
                             experiencePoints, currentLocationID);
+
+                        reader.Close();
                     }
 
                     // Read the rows/records from the Quest table, and add them to the player
@@ -79,6 +82,8 @@ namespace Engine
                                 player.Quests.Add(playerQuest);
                             }
                         }
+
+                        reader.Close();
                     }
 
                     // Read the rows/records from the Inventory table, and add them to the player
@@ -100,10 +105,36 @@ namespace Engine
                                 player.AddItemToInventory(World.ItemByID(inventoryItemID), quantity);
                             }
                         }
+
+                        reader.Close();
                     }
 
+                    // Read the rows/records from the LocationVisited table, and add them to the player
+                    using (SqlCommand locationVisitedCommand = connection.CreateCommand())
+                    {
+                        locationVisitedCommand.CommandType = CommandType.Text;
+                        locationVisitedCommand.CommandText = "SELECT * FROM LocationVisited";
+
+                        SqlDataReader reader = locationVisitedCommand.ExecuteReader();
+
+                        if (reader.HasRows)
+                        {
+                            while (reader.Read())
+                            {
+                                int id = (int)reader["ID"];
+
+                                // Add the item to the player's LocationsVisited property
+                                player.LocationsVisited.Add(id);
+                            }
+                        }
+
+                        reader.Close();
+                    }
+
+                    player.CurrentLocation = World.LocationByID(World.LOCATION_ID_HOME);
+
                     // Now that the player has been built from the database, return it.
-                    return player;
+                    return player; 
                 }
             }
             catch (Exception ex)
@@ -251,6 +282,30 @@ namespace Engine
                             insertInventoryCommand.Parameters["@Quantity"].Value = inventoryItem.Quantity;
 
                             insertInventoryCommand.ExecuteNonQuery();
+                        }
+                    }
+
+                    // Delete existing LocationVisited rows
+                    using (SqlCommand deleteLocationVisitedCommand = connection.CreateCommand())
+                    {
+                        deleteLocationVisitedCommand.CommandType = CommandType.Text;
+                        deleteLocationVisitedCommand.CommandText = "DELETE FROM LocationVisited";
+
+                        deleteLocationVisitedCommand.ExecuteNonQuery();
+                    }
+
+                    // Insert LocationVisited rows, from the player object
+                    foreach (int locationVisitedID in player.LocationsVisited)
+                    {
+                        using (SqlCommand insertLocationVisitedCommand = connection.CreateCommand())
+                        {
+                            insertLocationVisitedCommand.CommandType = CommandType.Text;
+                            insertLocationVisitedCommand.CommandText = "INSERT INTO LocationVisited (ID) VALUES (@ID)";
+
+                            insertLocationVisitedCommand.Parameters.Add("@ID", SqlDbType.Int);
+                            insertLocationVisitedCommand.Parameters["@ID"].Value = locationVisitedID;
+
+                            insertLocationVisitedCommand.ExecuteNonQuery();
                         }
                     }
                 }
