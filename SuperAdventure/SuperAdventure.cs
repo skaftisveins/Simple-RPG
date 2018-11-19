@@ -18,7 +18,7 @@ namespace SuperAdventure
         {
             InitializeComponent();
 
-            _player = PlayerDataMapper.CreateFromDatabase();
+            // _player = PlayerDataMapper.CreateFromDatabase();
 
             if(_player == null)
             { 
@@ -31,6 +31,7 @@ namespace SuperAdventure
                     _player = Player.CreateDefaultPlayer();
                 }
             }
+
             lblHitPoints.DataBindings.Add("Text", _player, "CurrentHitPoints");
             lblGold.DataBindings.Add("Text", _player, "Gold");
             lblExperience.DataBindings.Add("Text", _player, "ExperiencePoints");
@@ -107,7 +108,16 @@ namespace SuperAdventure
         {
             if (propertyChangedEventArgs.PropertyName == "Weapons")
             {
+                Weapon previouslySelectedWeapon = _player.CurrentWeapon;
+
                 cboWeapons.DataSource = _player.Weapons;
+
+                if (previouslySelectedWeapon != null &&
+                    _player.Weapons.Exists(w => w.ID == previouslySelectedWeapon.ID))
+                {
+                    cboWeapons.SelectedItem = previouslySelectedWeapon;
+                }
+
                 if (!_player.Weapons.Any())
                 {
                     cboWeapons.Visible = false;
@@ -134,7 +144,7 @@ namespace SuperAdventure
                 // Display current location name and description
                 rtbLocation.Text = _player.CurrentLocation.Name +  Environment.NewLine;
                 rtbLocation.Text += _player.CurrentLocation.Description + Environment.NewLine;
-                if (_player.CurrentLocation.MonsterLivingHere == null)
+                if (!_player.CurrentLocation.HasAMonster)
                 {
                     cboWeapons.Visible = false;
                     cboPotions.Visible = false;
@@ -169,6 +179,13 @@ namespace SuperAdventure
         private void btnWest_Click(object sender, EventArgs e)
         {
             _player.MoveWest();
+        }
+
+        private void btnMap_Click(object sender, EventArgs e)
+        {
+            WorldMap mapScreen = new WorldMap(_player);
+            mapScreen.StartPosition = FormStartPosition.CenterParent;
+            mapScreen.ShowDialog(this);
         }
 
         private void btnUseWeapon_Click(object sender, EventArgs e)
@@ -211,6 +228,7 @@ namespace SuperAdventure
 
             PlayerDataMapper.SaveToDatabase(_player);
         }
+
     }
 }
 
